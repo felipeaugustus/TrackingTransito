@@ -1,24 +1,27 @@
 import cv2
+import time
 from ultralytics import YOLO
 
 # Load the YOLO model
-model = YOLO("yolo11n.pt")
-#model = YOLO("yolov8x.pt")
-#model = YOLO("yolo11x.pt")
-#model = YOLO("yolo11m.pt")
-
+model = YOLO("../Modelos/yolov8x.pt")
 
 # Open the video file
-video_path = "test2.mp4"
+video_path = "../test1.mp4"
 cap = cv2.VideoCapture(video_path)
 
 paused = False  # Flag de pausa
+prev_time = time.time()
 
 while cap.isOpened():
     if not paused:
         success, frame = cap.read()
         if not success:
             break
+
+        # Calcular FPS
+        current_time = time.time()
+        fps = 1 / (current_time - prev_time)
+        prev_time = current_time
 
         # Timestamp e frame
         timestamp_ms = cap.get(cv2.CAP_PROP_POS_MSEC)
@@ -47,9 +50,14 @@ while cap.isOpened():
                 label = f"{class_name} {conf:.2f}"
                 color = (0, 255, 0) if class_name == "person" else (255, 0, 0)
                 cv2.rectangle(frame, (xyxy[0], xyxy[1]), (xyxy[2], xyxy[3]), color, 2)
-                cv2.putText(frame, label, (xyxy[0], xyxy[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                cv2.putText(frame, label, (xyxy[0], xyxy[1] - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-        print(f"[{timestamp_str} | Frame {frame_id}] Pessoas: {count['person']}, Carros: {count['car']}")
+        # Mostrar FPS no frame
+        cv2.putText(frame, f"FPS: {fps:.2f}", (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+
+        print(f"[{timestamp_str} | Frame {frame_id} | FPS: {fps:.2f}] Pessoas: {count['person']}, Carros: {count['car']}")
 
     # Mostrar o frame (mesmo durante a pausa)
     cv2.imshow("YOLO - Pessoas (Verde) e Carros (Azul)", frame)
