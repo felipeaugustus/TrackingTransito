@@ -3,7 +3,7 @@ from ultralytics import YOLO
 import numpy as np
 import time
 
-model = YOLO("yolo11n.pt")
+model = YOLO("Modelos/yolo11n.pt")
 video_path = "test1.mp4"
 cap = cv2.VideoCapture(video_path)
 
